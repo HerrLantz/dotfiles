@@ -1,0 +1,10 @@
+let g:netrw_dirhistmax  =10
+let g:netrw_dirhist_cnt =8
+let g:netrw_dirhist_1='/Users/patric/KTH'
+let g:netrw_dirhist_2='/Users/patric/KTH/popl-2019'
+let g:netrw_dirhist_3='/Users/patric/dev/go/src/gbfys'
+let g:netrw_dirhist_4='/Users/patric/dev/go/src/gbfys/datatape'
+let g:netrw_dirhist_5='/Users/patric/dev/go/src/gbfys'
+let g:netrw_dirhist_6='/Users/patric/dev/go/src/gbfys/datatape'
+let g:netrw_dirhist_7='/Users/patric/dev/go/src/gbfys'
+let g:netrw_dirhist_8='/Users/patric/dev/go/src/gbfys/datatape'
