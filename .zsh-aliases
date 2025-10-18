@@ -1,17 +1,17 @@
-alias sshkth="ssh patricla@u-shell.csc.kth.se"
-alias sshctf="ssh herrlantz@shell2017.picoctf.com"
+alias ccat='pygmentize -g -O style=emacs'
 alias c='clear'
 alias now='date +"%T"'
 alias mv='mv -i'
 alias cp='cp -i'
 alias ln='ln -i'
-alias sl='ls'
 alias yaa='ls -la | grep'
 alias chx='chmod 755'
-alias gb='cd $OLDPWD'
-alias firefox='firefox &>/dev/null &'
+alias datestring='date +%Y%m%d%H%M'
 alias ls='ls -G'
 alias date='gdate'
-alias lizard='python $PY_LIZARD'
-alias vim='nvim'
-alias sshpi='ssh pi@192.168.1.5'
+alias gr='cd $(git rev-parse --show-toplevel)'
+alias sed='gsed'
+alias gcane='git commit --amend --no-edit'
+
+alias zshconfig="nvim ~/.zshrc"
+alias aliases="nvim ~/.zsh-aliases"
