@@ -32,9 +32,18 @@ This function should only modify configuration layer settings."
 
    ;; List of configuration layers to load.
    dotspacemacs-configuration-layers
-   '(toml
+   '((shell :variables
+            shell-default-shell 'eshell
+            shell-default-term-shell "/bin/zsh")
+     raku
+     csv
+     (spotify :variables
+              counsel-spotify-client-id "66be75be57b84de69e5af712cdd4b11b"
+              counsel-spotify-client-secret "5677f440d3d540faac4982ed703d1bf0")
+     toml
      sql
-     html
+     (html :variables
+           web-fmt-tool 'prettier)
      (yaml :variables
            yaml-enable-lsp t)
      (terraform :variables
@@ -55,14 +64,21 @@ This function should only modify configuration layer settings."
          go-use-golangci-lint t
          go-dap-mode 'dap-go)
      dap
+     (python :variables
+             python-backend 'lsp
+             python-test-runner 'pytest
+             python-format-on-save t
+             python-formatter 'ruff
+             python-save-before-test t
+             python-enable-tools '(uv)
+             python-sort-imports-on-save t
+             python-tab-width 2)
      (auto-completion :variables
-                      auto-completion-enable-help-tooltip t
+                      auto-completion-enable-help-tooltip 'manual
                       auto-completion-enable-snippets-in-popup t
                       auto-completion-enable-sort-by-usage t
                       auto-completion-idle-delay 0.0
-                      auto-completion-minimum-prefix-length 1
-                      ;; auto-completion-complete-with-key-sequence "fd"
-                      )
+                      spacemacs-default-company-backends '(company-files company-capf))
      (lsp :variables
           lsp-headerline-breadcrumb-enable t              ; Breadcrumb trail
           lsp-headerline-breadcrumb-segments '(symbols)   ; namespace & symbols, no file path
@@ -83,7 +99,8 @@ This function should only modify configuration layer settings."
      search-engine
      (emacs-lisp :variables
                  smartparens-strict-mode t
-                 aggresive-indent-mode t)
+                 aggresive-indent-mode t
+                 evil-safe-lisp-structural-editing t)
      (unicode-fonts :variables unicode-fonts-enable-ligatures t)
      (git :variables
           git-enable-magit-delta-plugin t
@@ -95,13 +112,15 @@ This function should only modify configuration layer settings."
            helm-use-fuzzy 'source
            helm-ag-fuzzy-match t
            helm-grep-ignored-directories '("node_modules" "dist" ".clj-kondo"))
-     markdown
+     (markdown :variables
+               markdown-live-preview-engine 'vmd)
      multiple-cursors
      (clojure :variables
-              ;; clojure-backend 'cider                 ; use cider and disable lsp
+              clojure-enable-fancify-symbols t
+              clojure-backend 'cider                 ; use cider and disable lsp
               clojure-enable-kaocha-runner t            ; enable Kaocha test runner
               cider-repl-display-help-banner nil        ; disable help banner
-              cider-print-fn 'puget                     ; pretty printing with sorted keys / set values
+              ;; cider-print-fn 'puget                     ; pretty printing with sorted keys / set values
               clojure-indent-style 'align-arguments
               clojure-align-forms-automatically t
               clojure-toplevel-inside-comment-form t ; clashes with LSP
@@ -110,7 +129,7 @@ This function should only modify configuration layer settings."
               smartparens-strict-mode t
               clojure-enable-linters 'clj-kondo
               clojure-enable-clj-refactor t
-              cider-repl-buffer-size-limit 100          ; limit lines shown in REPL buffer
+              ;; cider-repl-buffer-size-limit 100          ; limit lines shown in REPL buffer
               nrepl-use-ssh-fallback-for-remote-hosts t ; connect via ssh to remote hosts
               )
      (tree-sitter :variables
@@ -489,7 +508,7 @@ It should only modify the values of Spacemacs settings."
 
    ;; Show the scroll bar while scrolling. The auto hide time can be configured
    ;; by setting this variable to a number. (default t)
-   dotspacemacs-scroll-bar-while-scrolling t
+   dotspacemacs-scroll-bar-while-scrolling nil
 
    ;; Control line numbers activation.
    ;; If set to `t', `relative' or `visual' then line numbers are enabled in all
@@ -556,14 +575,14 @@ It should only modify the values of Spacemacs settings."
    ;; List of search tool executable names. Spacemacs uses the first installed
    ;; tool of the list. Supported tools are `rg', `ag', `pt', `ack' and `grep'.
    ;; (default '("rg" "ag" "pt" "ack" "grep"))
-   dotspacemacs-search-tools '("rg" "ag" "pt" "ack" "grep")
+   dotspacemacs-search-tools '("ag")
 
    ;; The backend used for undo/redo functionality. Possible values are
    ;; `undo-fu', `undo-redo' and `undo-tree' see also `evil-undo-system'.
    ;; Note that saved undo history does not get transferred when changing
    ;; your undo system. The default is currently `undo-fu' as `undo-tree'
    ;; is not maintained anymore and `undo-redo' is very basic."
-   dotspacemacs-undo-system 'undo-fu
+   dotspacemacs-undo-system 'undo-tree
 
    ;; Format specification for setting the frame title.
    ;; %a - the `abbreviated-file-name', or `buffer-name'
@@ -666,6 +685,10 @@ before packages are loaded."
   ;; UNDO TREE STOP BEING ANNOYING
   (setq undo-tree-history-directory-alist '(("." . "~/.emacs.d/undo")))
 
+  (when (daemonp)
+    (require 'exec-path-from-shell)
+    (exec-path-from-shell-initialize))
+
   ;; =========================== ESLINT CONFIG ===========================
   (defun my/use-eslint-from-node-modules ()
     (let* ((root (locate-dominating-file
@@ -683,6 +706,7 @@ before packages are loaded."
 
   ;; ======================== CLOJURE CONFIG ===========================
   (spacemacs/toggle-evil-safe-lisp-structural-editing-on-register-hook-clojure-mode)
+  (spacemacs/toggle-evil-safe-lisp-structural-editing-on-register-hook-emacs-lisp-mode)
   (add-hook 'clojure-mode-hook #'aggressive-indent-mode)
   (setq cider-jack-in-default 'lein)
 
@@ -744,7 +768,7 @@ before packages are loaded."
   (spacemacs/set-leader-keys-for-major-mode 'typescript-mode "oR" 'jest-test-debug-rerun-test)
 
   ;; Company mode speedup?
-  (setq company-lsp-cache-candidates t)
+  ;; (setq company-lsp-cache-candidates t)
 
   ;; Transparent title bar
   (add-to-list 'default-frame-alist '(ns-transparent-titlebar . :never))
@@ -784,26 +808,29 @@ This function is called at the very end of Spacemacs initialization."
    '(package-selected-packages
      '(ace-jump-helm-line ace-link ace-window add-node-modules-path afternoon-theme
                           aggressive-indent alect-themes all-the-icons ample-theme
-                          ample-zen-theme annalist anti-zenburn-theme anzu
-                          apropospriate-theme async auto-compile
-                          auto-highlight-symbol auto-yasnippet autothemer avy
-                          badwolf-theme bind-map birds-of-paradise-plus-theme
-                          browse-at-remote bubbleberry-theme bui busybee-theme
-                          centered-cursor-mode cfrs cherry-blossom-theme
-                          chocolate-theme cider cider-eval-sexp-fu clang-format
-                          clean-aindent-mode clj-refactor clojure-mode
-                          clojure-snippets closql clues-theme
-                          color-theme-sanityinc-solarized
+                          ample-zen-theme anaconda-mode annalist
+                          anti-zenburn-theme anzu apropospriate-theme async
+                          auto-compile auto-highlight-symbol auto-yasnippet
+                          autothemer avy badwolf-theme bind-map
+                          birds-of-paradise-plus-theme blacken browse-at-remote
+                          bubbleberry-theme bui busybee-theme centered-cursor-mode
+                          cfrs cherry-blossom-theme chocolate-theme cider
+                          cider-eval-sexp-fu clang-format clean-aindent-mode
+                          clj-refactor clojure-mode clojure-snippets closql
+                          clues-theme code-cells color-theme-sanityinc-solarized
                           color-theme-sanityinc-tomorrow column-enforce-mode
-                          company company-go company-quickhelp company-statistics
-                          company-terraform company-web compat counsel counsel-css
-                          csv-mode cyberpunk-theme dakrone-theme dap-mode
-                          darkmine-theme darkokai-theme darktooth-theme dash
-                          define-word devdocs diff-hl diminish dired-quick-sort
-                          django-theme doom-themes dotenv-mode dracula-theme
-                          drag-stuff dumb-jump ediprolog editorconfig elfeed
+                          company company-anaconda company-box company-go
+                          company-quickhelp company-statistics company-terraform
+                          company-web compat concurrent counsel counsel-css
+                          csv-mode ctable cyberpunk-theme cython-mode
+                          dakrone-theme dap-mode darkmine-theme darkokai-theme
+                          darktooth-theme dash define-word devdocs diff-hl
+                          diminish dired-quick-sort django-theme dockerfile-mode
+                          doom-themes dotenv-mode dracula-theme drag-stuff
+                          dumb-jump eat ediprolog editorconfig elfeed
                           elfeed-goodies elfeed-org elisp-def elisp-slime-nav
-                          emacsql emmet-mode emr engine-mode epl espresso-theme
+                          emacsql emmet-mode emr engine-mode epc epl esh-help
+                          eshell-prompt-extras eshell-z espresso-theme
                           eval-sexp-fu evil evil-anzu evil-args evil-cleverparens
                           evil-collection evil-easymotion evil-escape
                           evil-evilified-state evil-exchange evil-goggles
@@ -811,81 +838,88 @@ This function is called at the very end of Spacemacs initialization."
                           evil-lisp-state evil-matchit evil-mc evil-nerd-commenter
                           evil-numbers evil-surround evil-textobj-line evil-tutor
                           evil-unimpaired evil-vimish-fold evil-visual-mark-mode
-                          evil-visualstar exotica-theme expand-region eyebrowse
-                          eziam-themes f fancy-battery farmhouse-themes
-                          flatland-theme flatui-theme floobits flx flx-ido
-                          flycheck flycheck-clj-kondo flycheck-elsa
-                          flycheck-package flycheck-pos-tip flymake-golangci
-                          font-utils forge fringe-helper gandalf-theme gh-md ghub
-                          git-commit git-link git-messenger git-modes
-                          git-timemachine gitignore-templates go-eldoc
-                          go-fill-struct go-gen-test go-guru go-impl go-mode
-                          go-rename go-tag godoctor golden-ratio google-translate
-                          gotham-theme goto-chg grandshell-theme graphviz-dot-mode
-                          grizzl groovy-imports groovy-mode gruber-darker-theme
-                          gruvbox-theme haml-mode hc-zenburn-theme hcl-mode helm
-                          helm-ag helm-c-yasnippet helm-cider helm-comint
-                          helm-company helm-core helm-css-scss helm-descbinds
-                          helm-git-grep helm-ls-git helm-lsp helm-make
-                          helm-mode-manager helm-org helm-projectile helm-purpose
-                          helm-swoop helm-themes helm-xref hemisu-theme
-                          heroku-theme hide-comnt hierarchy highlight
+                          evil-visualstar exec-path-from-shell exotica-theme
+                          expand-region eyebrowse eziam-themes f fancy-battery
+                          farmhouse-themes flatland-theme flatui-theme floobits
+                          flx flx-ido flycheck flycheck-clj-kondo flycheck-elsa
+                          flycheck-package flycheck-pos-tip flycheck-raku
+                          flymake-golangci font-utils forge frame-local
+                          fringe-helper gandalf-theme ggtags gh-md ghub git-commit
+                          git-link git-messenger git-modes git-timemachine
+                          gitignore-templates go-eldoc go-fill-struct go-gen-test
+                          go-guru go-impl go-mode go-rename go-tag godoctor
+                          golden-ratio google-translate gotham-theme goto-chg
+                          grandshell-theme graphviz-dot-mode grizzl groovy-imports
+                          groovy-mode gruber-darker-theme gruvbox-theme haml-mode
+                          hc-zenburn-theme hcl-mode helm helm-ag helm-c-yasnippet
+                          helm-cider helm-comint helm-company helm-core
+                          helm-cscope helm-css-scss helm-descbinds helm-git-grep
+                          helm-ls-git helm-lsp helm-make helm-mode-manager
+                          helm-org helm-projectile helm-purpose helm-pydoc
+                          helm-spotify-plus helm-swoop helm-themes helm-xref
+                          hemisu-theme heroku-theme hide-comnt hierarchy highlight
                           highlight-indent-guides highlight-indentation
                           highlight-numbers highlight-parentheses hl-todo
                           holy-mode ht htmlize hungry-delete hydra iedit
-                          imenu-list impatient-mode import-js indent-guide
-                          inflections info+ inkpot-theme inspector ir-black-theme
-                          ivy jazz-theme jbeans-theme jest-test-mode
-                          journalctl-mode js-doc js2-mode js2-refactor json-mode
-                          json-navigator json-reformat json-snatcher kaocha-runner
-                          kaolin-themes launchctl ligature light-soap-theme
-                          link-hint list-utils livid-mode lorem-ipsum lsp-docker
-                          lsp-origami lsp-treemacs lsp-ui lush-theme lv
-                          macrostep madhat2r-theme magit magit-delta magit-section
-                          magit-svn magit-todos majapahit-themes markdown-mode
-                          markdown-toc material-theme maven-test-mode
-                          minimal-theme mmt modus-themes moe-theme molokai-theme
-                          monochrome-theme monokai-theme multi-line
-                          multiple-cursors mustang-theme mvn nameless
-                          naquadah-theme noctilux-theme nodejs-repl npm-mode
-                          obsidian-theme occidental-theme oldlace-theme
-                          omtose-phellack-theme open-junk-file org-superstar
-                          organic-green-theme origami osx-clipboard osx-dictionary
-                          osx-trash overseer package-lint paradox paredit
-                          parent-mode parseclj parseedn password-generator pcache
-                          pcre2el persistent-soft persp-mode pfuture
-                          phoenix-dark-mono-theme phoenix-dark-pink-theme pkg-info
-                          planet-theme popup popwin pos-tip posframe powerline
+                          imenu-list impatient-mode import-js importmagic
+                          indent-guide inflections info+ inkpot-theme inspector
+                          ir-black-theme ivy jazz-theme jbeans-theme
+                          jest-test-mode journalctl-mode jq-mode js-doc js2-mode
+                          js2-refactor json-mode json-navigator json-reformat
+                          json-snatcher kaocha-runner kaolin-themes launchctl
+                          ligature light-soap-theme link-hint list-utils
+                          live-py-mode livid-mode load-env-vars lorem-ipsum
+                          lsp-docker lsp-origami lsp-pyright lsp-treemacs lsp-ui
+                          lush-theme lv macrostep madhat2r-theme magit magit-delta
+                          magit-section magit-svn magit-todos majapahit-themes
+                          markdown-mode markdown-toc material-theme
+                          maven-test-mode minimal-theme mmt modus-themes moe-theme
+                          molokai-theme monochrome-theme monokai-theme multi
+                          multi-line multi-term multi-vterm multiple-cursors
+                          mustang-theme mvn nameless naquadah-theme noctilux-theme
+                          nodejs-repl nose npm-mode obsidian-theme
+                          occidental-theme oldlace-theme omtose-phellack-theme
+                          open-junk-file org-superstar organic-green-theme origami
+                          osx-clipboard osx-dictionary osx-trash overseer
+                          package-lint paradox paredit parent-mode parseclj
+                          parseedn password-generator pcache pcre2el
+                          persistent-soft persp-mode pet pfuture
+                          phoenix-dark-mono-theme phoenix-dark-pink-theme
+                          pip-requirements pipenv pippel pkg-info planet-theme
+                          poetry popup popwin pos-tip posframe powerline
                           prettier-js prisma-ts-mode professional-theme projectile
-                          pug-mode purple-haze-theme queue quickrun
-                          railscasts-theme rainbow-delimiters ranger rebecca-theme
-                          request restart-emacs reveal-in-osx-finder reverse-theme
-                          rjsx-mode ron-mode rust-mode rustic s sass-mode
-                          scss-mode seq sesman seti-theme shut-up simple-httpd
-                          skewer-mode slim-mode smartparens smeargle smyx-theme
-                          soft-charcoal-theme soft-morning-theme soft-stone-theme
-                          solarized-theme soothe-theme space-doc spacegray-theme
-                          spaceline spacemacs-purpose-popwin
-                          spacemacs-whitespace-cleanup spinner sql-indent
-                          sqlup-mode string-edit-at-point string-inflection
-                          subatomic-theme subatomic256-theme sublime-themes
-                          sunny-day-theme swift-mode swiper symbol-overlay symon
-                          systemd tagedit tango-2-theme tango-plus-theme
-                          tangotango-theme tao-theme term-cursor terraform-mode
-                          tide toc-org toml-mode toxi-theme transient tree-sitter
+                          pug-mode purple-haze-theme py-isort pydoc pyenv-mode
+                          pylookup python-django python-pytest pythonic pyvenv
+                          queue quickrun railscasts-theme rainbow-delimiters
+                          raku-mode ranger rebecca-theme reformatter request
+                          restart-emacs reveal-in-osx-finder reverse-theme
+                          rjsx-mode ron-mode ruff-format rust-mode rustic s
+                          sass-mode scss-mode seq sesman seti-theme shell-pop
+                          shut-up simple-httpd skewer-mode slim-mode smartparens
+                          smeargle smyx-theme soft-charcoal-theme
+                          soft-morning-theme soft-stone-theme solarized-theme
+                          soothe-theme space-doc spacegray-theme spaceline
+                          spacemacs-purpose-popwin spacemacs-whitespace-cleanup
+                          sphinx-doc spinner spotify sql-indent sqlup-mode
+                          string-edit-at-point string-inflection subatomic-theme
+                          subatomic256-theme sublime-themes sunny-day-theme
+                          swift-mode swiper symbol-overlay symon systemd tagedit
+                          tango-2-theme tango-plus-theme tangotango-theme
+                          tao-theme term-cursor terminal-here terraform-mode tide
+                          toc-org toml-mode toxi-theme transient tree-sitter
                           tree-sitter-langs treemacs treemacs-evil
                           treemacs-icons-dired treemacs-magit treemacs-persp
                           treemacs-projectile treepy ts-comint ts-fold tsc
                           twilight-anti-bright-theme twilight-bright-theme
                           twilight-theme typescript-mode typit ucs-utils
                           ujelly-theme underwater-theme undo-tree unicode-fonts
-                          uuidgen vi-tilde-fringe vim-powerline vimish-fold
-                          visual-fill-column volatile-highlights web-beautify
-                          web-completion-data web-mode wfnames which-key
-                          white-sand-theme window-purpose winum with-editor
-                          writeroom-mode ws-butler xterm-color yaml yaml-mode
-                          yasnippet yasnippet-snippets zen-and-art-theme
-                          zenburn-theme zone-nyan zonokai-emacs))
+                          uuidgen uv vi-tilde-fringe vim-powerline vimish-fold
+                          visual-fill-column vmd-mode volatile-highlights vterm
+                          web-beautify web-completion-data web-mode wfnames
+                          which-key white-sand-theme window-purpose winum
+                          with-editor writeroom-mode ws-butler xcscope xterm-color
+                          yaml yaml-mode yapfify yasnippet yasnippet-snippets
+                          zen-and-art-theme zenburn-theme zone-nyan zonokai-emacs))
    '(standard-indent 2)
    '(typescript-indent-level 2))
   (custom-set-faces
